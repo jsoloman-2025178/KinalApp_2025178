@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class Cliente {
     @Id
     @Column(name = "dpi_cliente")
-    private String DPICliente;
+    private String DPICliente;  //
     @Column
     private String nombreCliente;
     @Column

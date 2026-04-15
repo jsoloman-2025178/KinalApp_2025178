@@ -11,27 +11,32 @@ public class Usuario {
     @Column(name = "codigo_usuario")
     private Long codigoUsuario;
 
-    @Column
+    // ELIMINA ESTAS LÍNEAS:
+    // @Column(name = "nombre", nullable = false)
+    // private String nombre;
+
+    @Column(name = "username", unique = true, nullable = false)
     private String username;
 
-    @Column
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column
+    @Column(name = "rol", nullable = false)
     private String rol;
 
-    @Column
-    private int estado;
+    @Column(name = "estado")
+    private int estado = 1;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Venta> ventas;
 
-    public Usuario() {
-    }
+    // Constructor vacío
+    public Usuario() {}
 
+    // Constructor con parámetros (sin nombre)
     public Usuario(Long codigoUsuario, String username, String password, String email, String rol, int estado) {
         this.codigoUsuario = codigoUsuario;
         this.username = username;
@@ -41,6 +46,7 @@ public class Usuario {
         this.estado = estado;
     }
 
+    // Getters y Setters (sin getNombre/setNombre)
     public Long getCodigoUsuario() {
         return codigoUsuario;
     }
