@@ -28,17 +28,21 @@ public class UsuarioService implements IUsuarioService {
     public Usuario guardar(Usuario usuario) {
         validarUsuario(usuario);
 
+        // Verificar si el username ya existe
         if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent()) {
             throw new IllegalArgumentException("El username ya está registrado: " + usuario.getUsername());
         }
 
+        // Verificar si el email ya existe
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             throw new IllegalArgumentException("El email ya está registrado: " + usuario.getEmail());
         }
 
+
         if (usuario.getEstado() == 0) {
             usuario.setEstado(1);
         }
+
         return usuarioRepository.save(usuario);
     }
 
