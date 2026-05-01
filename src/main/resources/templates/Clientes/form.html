@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario Cliente</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo">
+        <img src="/logo.png" alt="KinalApp">
+    </div>
+    <h2>KinalApp</h2>
+    <nav>
+        <a href="/clientes"><i class="fas fa-users"></i> Clientes</a>
+        <a href="#">📦 Productos</a>
+        <a href="#">💰 Ventas</a>
+        <a href="#">👤 Usuarios</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1 th:text="${titulo}">Clientes</h1>
+        <a href="/logout" class="logout-btn">Cerrar Sesión</a>
+    </div>
+
+    <div class="card">
+        <form th:action="@{${cliente.DPICliente != null} ? '/clientes/actualizar/' + ${cliente.DPICliente} : '/clientes/guardar'}"
+              th:object="${cliente}"
+              method="post">
+
+            <div class="form-group">
+                <label>DPI:</label>
+                <input type="text" th:field="*{DPICliente}" th:readonly="${cliente.DPICliente != null}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nombre:</label>
+                <input type="text" th:field="*{nombreCliente}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Apellido:</label>
+                <input type="text" th:field="*{apellidoCliente}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Dirección:</label>
+                <input type="text" th:field="*{direccion}">
+            </div>
+
+            <div class="form-group">
+                <label>Estado:</label>
+                <select th:field="*{estado}">
+                    <option th:value="1">Activo</option>
+                    <option th:value="0">Inactivo</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit">💾 Guardar</button>
+            <a href="/clientes" class="btn-cancel">❌ Cancelar</a>
+        </form>
+    </div>
+</div>
+</body>
+</html>
