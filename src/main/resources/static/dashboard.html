@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - KinalApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: fixed;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .sidebar nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-add {
+            background: #2ecc71;
+            color: white;
+            padding: 8px 15px;
+            margin-bottom: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+        }
+
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 10000;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div style="text-align: center; margin-bottom: 20px; padding: 10px;">
+        <img src="/logo.png" alt="Logo KinalApp" style="width: 80px; height: auto; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+    </div>
+    <h2 style="text-align: center; margin-bottom: 30px;">KinalApp</h2>
+    <nav>
+        <a onclick="showSection('clientes')">👥 Clientes</a>
+        <a onclick="showSection('productos')">📦 Productos</a>
+        <a onclick="showSection('ventas')">💰 Ventas</a>
+        <a onclick="showSection('usuarios')">👤 Usuarios</a>
+    </nav>
+</div>
+<div class="main-content">
+    <div class="header">
+        <h1 id="sectionTitle">Clientes</h1>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    </div>
+    <div id="content">
+        <div class="loading">Cargando...</div>
+    </div>
+</div>
+
+<script>
+    // Verificar autenticación
+    if (localStorage.getItem('isAuthenticated') !== 'true') {
+        window.location.href = 'index.html';
+    }
+
+    const API_BASE = 'http://localhost:8500';
+
+    function logout() {
+        localStorage.removeItem('isAuthenticated');
+        window.location.href = 'index.html';
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    function showSection(section) {
+        const titles = {
+            clientes: '👥 Clientes',
+            productos: '📦 Productos',
+            ventas: '💰 Ventas',
+            usuarios: '👤 Usuarios'
+        };
+        document.getElementById('sectionTitle').innerText = titles[section];
+        document.getElementById('content').innerHTML = '<div class="loading">Cargando...</div>';
+
+        if (section === 'clientes') loadClientes();
+        else if (section === 'productos') loadProductos();
+        else if (section === 'ventas') loadVentas();
+        else if (section === 'usuarios') loadUsuarios();
+    }
+
+    // ==================== CLIENTES ====================
+    async function loadClientes() {
+        try {
+            const res = await fetch(`${API_BASE}/clientes`);
+            const data = await res.json();
+
+            let html = '<button class="btn-add" onclick="showClienteModal()">➕ Nuevo Cliente</button><div class="card"><table><thead><tr><th>DPI</th><th>Nombre</th><th>Apellido</th><th>Dirección</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+
+            data.forEach(c => {
+                html += `<tr>
+                    <td>${c.DPICliente || c.dpicliente}</td>
+                    <td>${c.nombreCliente}</td>
+                    <td>${c.apellidoCliente}</td>
+                    <td>${c.direccion}</td>
+                    <td>${c.estado === 1 ? '✅ Activo' : '❌ Inactivo'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editCliente('${c.DPICliente || c.dpicliente}')">Editar</button>
+                        <button class="btn-delete" onclick="deleteCliente('${c.DPICliente || c.dpicliente}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            document.getElementById('content').innerHTML = html;
+        } catch (error) {
+            document.getElementById('content').innerHTML = `<div class="card">Error: ${error.message}</div>`;
+        }
+    }
+
+    function showClienteModal(cliente = null) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>${cliente ? 'Editar Cliente' : 'Nuevo Cliente'}</h3>
+                <input type="text" id="dpi" placeholder="DPI" value="${cliente ? (cliente.DPICliente || cliente.dpicliente) : ''}" ${cliente ? 'readonly' : ''}>
+                <input type="text" id="nombre" placeholder="Nombre" value="${cliente ? cliente.nombreCliente : ''}">
+                <input type="text" id="apellido" placeholder="Apellido" value="${cliente ? cliente.apellidoCliente : ''}">
+                <input type="text" id="direccion" placeholder="Dirección" value="${cliente ? cliente.direccion : ''}">
+                <select id="estado">
+                    <option value="1" ${cliente && cliente.estado === 1 ? 'selected' : ''}>Activo</option>
+                    <option value="0" ${cliente && cliente.estado === 0 ? 'selected' : ''}>Inactivo</option>
+                </select>
+                <button onclick="saveCliente(${cliente ? `'${cliente.DPICliente || cliente.dpicliente}'` : 'null'}, this)">Guardar</button>
+                <button onclick="this.parentElement.parentElement.remove()">Cancelar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    async function saveCliente(existingDpi, btn) {
+        const modal = btn.parentElement.parentElement;
+        const data = {
+            DPICliente: document.getElementById('dpi').value,
+            nombreCliente: document.getElementById('nombre').value,
+            apellidoCliente: document.getElementById('apellido').value,
+            direccion: document.getElementById('direccion').value,
+            estado: parseInt(document.getElementById('estado').value)
+        };
+
+        const url = existingDpi ? `${API_BASE}/clientes/${existingDpi}` : `${API_BASE}/clientes`;
+        const method = existingDpi ? 'PUT' : 'POST';
+
+        try {
+            btn.textContent = 'Guardando...';
+            await fetch(url, {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+            showNotification('Cliente guardado', 'success');
+            modal.remove();
+            loadClientes();
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+            btn.textContent = 'Guardar';
+        }
+    }
+
+    async function deleteCliente(dpi) {
+        if (!confirm('¿Eliminar cliente?')) return;
+        await fetch(`${API_BASE}/clientes/${dpi}`, {method: 'DELETE'});
+        showNotification('Cliente eliminado', 'success');
+        loadClientes();
+    }
+
+    async function editCliente(dpi) {
+        const res = await fetch(`${API_BASE}/clientes/${dpi}`);
+        const cliente = await res.json();
+        showClienteModal(cliente);
+    }
+
+    // ==================== PRODUCTOS ====================
+    async function loadProductos() {
+        try {
+            const res = await fetch(`${API_BASE}/productos`);
+            const data = await res.json();
+
+            let html = '<button class="btn-add" onclick="showProductoModal()">➕ Nuevo Producto</button><div class="card"><table><thead><tr><th>Código</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+
+            data.forEach(p => {
+                html += `<tr>
+                    <td>${p.codigoProducto}</td>
+                    <td>${p.nombreProducto}</td>
+                    <td>Q${p.precio}</td>
+                    <td>${p.stock}</td>
+                    <td>${p.estado === 1 ? '✅ Activo' : '❌ Inactivo'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editProducto(${p.codigoProducto})">Editar</button>
+                        <button class="btn-delete" onclick="deleteProducto(${p.codigoProducto})">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            document.getElementById('content').innerHTML = html;
+        } catch (error) {
+            document.getElementById('content').innerHTML = `<div class="card">Error: ${error.message}</div>`;
+        }
+    }
+
+    function showProductoModal(producto = null) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>${producto ? 'Editar Producto' : 'Nuevo Producto'}</h3>
+                <input type="text" id="nombre" placeholder="Nombre" value="${producto ? producto.nombreProducto : ''}">
+                <input type="number" id="precio" placeholder="Precio" value="${producto ? producto.precio : ''}">
+                <input type="number" id="stock" placeholder="Stock" value="${producto ? producto.stock : ''}">
+                <select id="estado">
+                    <option value="1" ${producto && producto.estado === 1 ? 'selected' : ''}>Activo</option>
+                    <option value="0" ${producto && producto.estado === 0 ? 'selected' : ''}>Inactivo</option>
+                </select>
+                <button onclick="saveProducto(${producto ? producto.codigoProducto : 'null'}, this)">Guardar</button>
+                <button onclick="this.parentElement.parentElement.remove()">Cancelar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    async function saveProducto(codigo, btn) {
+        const modal = btn.parentElement.parentElement;
+        const data = {
+            nombreProducto: document.getElementById('nombre').value,
+            precio: parseFloat(document.getElementById('precio').value),
+            stock: parseInt(document.getElementById('stock').value),
+            estado: parseInt(document.getElementById('estado').value)
+        };
+
+        const url = codigo ? `${API_BASE}/productos/${codigo}` : `${API_BASE}/productos`;
+        const method = codigo ? 'PUT' : 'POST';
+
+        try {
+            btn.textContent = 'Guardando...';
+            await fetch(url, {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+            showNotification('Producto guardado', 'success');
+            modal.remove();
+            loadProductos();
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+            btn.textContent = 'Guardar';
+        }
+    }
+
+    async function deleteProducto(codigo) {
+        if (!confirm('¿Eliminar producto?')) return;
+        await fetch(`${API_BASE}/productos/${codigo}`, {method: 'DELETE'});
+        showNotification('Producto eliminado', 'success');
+        loadProductos();
+    }
+
+    async function editProducto(codigo) {
+        const res = await fetch(`${API_BASE}/productos/${codigo}`);
+        const producto = await res.json();
+        showProductoModal(producto);
+    }
+
+    // ==================== VENTAS ====================
+    async function loadVentas() {
+        try {
+            const res = await fetch(`${API_BASE}/ventas`);
+            const data = await res.json();
+
+            let html = '<div class="card"><table><thead><tr><th>Código</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Cliente</th></tr></thead><tbody>';
+
+            data.forEach(v => {
+                html += `<tr>
+                    <td>${v.codigoVenta}</td>
+                    <td>${v.fechaVenta ? new Date(v.fechaVenta).toLocaleDateString() : ''}</td>
+                    <td>Q${v.total}</td>
+                    <td>${v.estado === 1 ? '✅ Activa' : '❌ Cancelada'}</td>
+                    <td>${v.cliente?.DPICliente || v.cliente?.dpicliente || 'N/A'}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            document.getElementById('content').innerHTML = html;
+        } catch (error) {
+            document.getElementById('content').innerHTML = `<div class="card">Error: ${error.message}</div>`;
+        }
+    }
+
+    // ==================== USUARIOS ====================
+    async function loadUsuarios() {
+        try {
+            const res = await fetch(`${API_BASE}/usuarios`);
+            const data = await res.json();
+
+            let html = '<button class="btn-add" onclick="showUsuarioModal()">➕ Nuevo Usuario</button><div class="card"><table><thead><tr><th>Código</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+
+            data.forEach(u => {
+                html += `<tr>
+                    <td>${u.codigoUsuario}</td>
+                    <td>${u.username}</td>
+                    <td>${u.email}</td>
+                    <td>${u.rol}</td>
+                    <td>${u.estado === 1 ? '✅ Activo' : '❌ Inactivo'}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editUsuario(${u.codigoUsuario})">Editar</button>
+                        <button class="btn-delete" onclick="deleteUsuario(${u.codigoUsuario})">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            document.getElementById('content').innerHTML = html;
+        } catch (error) {
+            document.getElementById('content').innerHTML = `<div class="card">Error: ${error.message}</div>`;
+        }
+    }
+
+    function showUsuarioModal(usuario = null) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>${usuario ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
+                <input type="text" id="username" placeholder="Usuario" value="${usuario ? usuario.username : ''}">
+                <input type="password" id="password" placeholder="Contraseña" value="">
+                <input type="email" id="email" placeholder="Email" value="${usuario ? usuario.email : ''}">
+                <input type="text" id="rol" placeholder="Rol" value="${usuario ? usuario.rol : ''}">
+                <select id="estado">
+                    <option value="1" ${usuario && usuario.estado === 1 ? 'selected' : ''}>Activo</option>
+                    <option value="0" ${usuario && usuario.estado === 0 ? 'selected' : ''}>Inactivo</option>
+                </select>
+                <button onclick="saveUsuario(${usuario ? usuario.codigoUsuario : 'null'}, this)">Guardar</button>
+                <button onclick="this.parentElement.parentElement.remove()">Cancelar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    async function saveUsuario(codigo, btn) {
+        const modal = btn.parentElement.parentElement;
+        const data = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            email: document.getElementById('email').value,
+            rol: document.getElementById('rol').value,
+            estado: parseInt(document.getElementById('estado').value)
+        };
+
+        const url = codigo ? `${API_BASE}/usuarios/${codigo}` : `${API_BASE}/usuarios`;
+        const method = codigo ? 'PUT' : 'POST';
+
+        try {
+            btn.textContent = 'Guardando...';
+            const response = await fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error);
+            }
+
+            showNotification('Usuario guardado', 'success');
+            modal.remove();
+            loadUsuarios();
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+            btn.textContent = 'Guardar';
+        }
+    }
+
+    async function deleteUsuario(codigo) {
+        if (!confirm('¿Eliminar usuario?')) return;
+        await fetch(`${API_BASE}/usuarios/${codigo}`, {method: 'DELETE'});
+        showNotification('Usuario eliminado', 'success');
+        loadUsuarios();
+    }
+
+    async function editUsuario(codigo) {
+        const res = await fetch(`${API_BASE}/usuarios/${codigo}`);
+        const usuario = await res.json();
+        showUsuarioModal(usuario);
+    }
+
+    // Iniciar con clientes
+    showSection('clientes');
+</script>
+</body>
+</html>
