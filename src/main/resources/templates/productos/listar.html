@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos - KinalApp</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo">
+        <img src="/logo.png" alt="KinalApp">
+    </div>
+    <h2>KinalApp</h2>
+    <nav>
+        <a href="/clientes"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/productos"><i class="fas fa-box"></i> Productos</a>
+        <a href="/ventas"><i class="fas fa-shopping-cart"></i> Ventas</a>
+        <a href="/usuarios"><i class="fas fa-user-cog"></i> Usuarios</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>📦 Gestión de Productos</h1>
+        <a href="/logout" class="logout-btn">Cerrar Sesión</a>
+    </div>
+
+    <a href="/productos/nuevo" class="btn-add">➕ Nuevo Producto</a>
+
+    <div class="card">
+        <table>
+            <thead>
+            <tr><th>Código</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="producto : ${productos}">
+                <td th:text="${producto.codigoProducto}"></td>
+                <td th:text="${producto.nombreProducto}"></td>
+                <td th:text="'Q' + ${producto.precio}"></td>
+                <td th:text="${producto.stock}"></td>
+                <td>
+                    <span th:if="${producto.estado == 1}" class="badge-active">✅ Activo</span>
+                    <span th:if="${producto.estado == 0}" class="badge-inactive">❌ Inactivo</span>
+                </td>
+                <td>
+                    <a th:href="@{/productos/editar/{codigo}(codigo=${producto.codigoProducto})}" class="btn-edit">✏️ Editar</a>
+                    <a th:href="@{/productos/eliminar/{codigo}(codigo=${producto.codigoProducto})}" class="btn-delete" onclick="return confirm('¿Eliminar producto?')">🗑️ Eliminar</a>
+                </td>
+            </tr>
+            <tr th:if="${productos.isEmpty()}">
+                <td colspan="6" class="empty">No hay productos registrados</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
