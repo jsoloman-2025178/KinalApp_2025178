@@ -1,4 +1,4 @@
 package com.jeffersonsoloman.kinalapp.controller;
 
-public class ClienteController {
+public class AuthController {
 }

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - KinalApp</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="logo">
+        <img src="/logo.png" alt="KinalApp">
+    </div>
+    <h2>🔐 KinalApp</h2>
+
+    <div th:if="${param.error}" class="error">
+        ❌ Usuario o contraseña incorrectos
+    </div>
+
+    <div th:if="${param.logout}" class="success">
+        ✅ Sesión cerrada correctamente
+    </div>
+
+    <form method="post" action="/login">
+        <input type="text" name="username" placeholder="Usuario" required>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Ingresar</button>
+    </form>
+</div>
+</body>
+</html>
