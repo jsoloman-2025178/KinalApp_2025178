@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Clientes - KinalApp</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo">
+        <img src="/logo.png" alt="KinalApp">
+    </div>
+    <h2>KinalApp</h2>
+    <nav>
+        <a href="/clientes"><i class="fas fa-users"></i> Clientes</a>
+        <a href="#">📦 Productos</a>
+        <a href="#">💰 Ventas</a>
+        <a href="#">👤 Usuarios</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>👥 Gestión de Clientes</h1>
+        <a href="/logout" class="logout-btn">Cerrar Sesión</a>
+    </div>
+
+    <a href="/clientes/nuevo" class="btn-add">➕ Nuevo Cliente</a>
+
+    <div class="card">
+        <table>
+            <thead>
+            <tr><th>DPI</th><th>Nombre</th><th>Apellido</th><th>Dirección</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="cliente : ${clientes}">
+                <td th:text="${cliente.DPICliente}"></td>
+                <td th:text="${cliente.nombreCliente}"></td>
+                <td th:text="${cliente.apellidoCliente}"></td>
+                <td th:text="${cliente.direccion}"></td>
+                <td>
+                    <span th:if="${cliente.estado == 1}" class="badge-active">✅ Activo</span>
+                    <span th:if="${cliente.estado == 0}" class="badge-inactive">❌ Inactivo</span>
+                </td>
+                <td>
+                    <a th:href="@{/clientes/editar/{dpi}(dpi=${cliente.DPICliente})}" class="btn-edit">✏️ Editar</a>
+                    <a th:href="@{/clientes/eliminar/{dpi}(dpi=${cliente.DPICliente})}" class="btn-delete" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">🗑️ Eliminar</a>
+                </td>
+            </tr>
+            <tr th:if="${clientes.isEmpty()}">
+                <td colspan="6" class="empty">No hay clientes registrados</td>
+        </table>
+        </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
