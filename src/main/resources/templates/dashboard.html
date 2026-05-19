@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - KinalApp</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo">
+        <img src="/logo.png" alt="KinalApp">
+    </div>
+    <h2>KinalApp</h2>
+    <nav>
+        <a href="/clientes"><i class="fas fa-users"></i> Clientes</a>
+        <a href="/productos"><i class="fas fa-box"></i> Productos</a>
+        <a href="/ventas"><i class="fas fa-shopping-cart"></i> Ventas</a>
+        <a href="/usuarios"><i class="fas fa-user-cog"></i> Usuarios</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>Bienvenido, <span sec:authentication="name">admin</span></h1>
+        <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <i class="fas fa-users"></i>
+            <h3>Clientes</h3>
+            <a href="/clientes">Gestionar →</a>
+        </div>
+        <div class="card">
+            <i class="fas fa-box"></i>
+            <h3>Productos</h3>
+            <a href="/productos">Gestionar →</a>
+        </div>
+        <div class="card">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Ventas</h3>
+            <a href="/ventas">Ver ventas →</a>
+        </div>
+        <div class="card">
+            <i class="fas fa-user-cog"></i>
+            <h3>Usuarios</h3>
+            <a href="/usuarios">Gestionar →</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
